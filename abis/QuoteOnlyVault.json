@@ -1,0 +1,60 @@
+[
+  {
+    "type": "event",
+    "name": "Deposit",
+    "inputs": [
+      { "name": "user",         "type": "address", "indexed": true },
+      { "name": "quoteAmount",  "type": "uint256", "indexed": false },
+      { "name": "sharesMinted", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "Withdraw",
+    "inputs": [
+      { "name": "user",          "type": "address", "indexed": true },
+      { "name": "sharesBurned",  "type": "uint256", "indexed": false },
+      { "name": "quoteReturned", "type": "uint256", "indexed": false },
+      { "name": "baseReturned",  "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "Rebalance",
+    "inputs": [
+      { "name": "isDeleverage", "type": "bool",    "indexed": true },
+      { "name": "ltvBefore",    "type": "uint256", "indexed": false },
+      { "name": "ltvAfter",     "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "Rebalanced",
+    "inputs": [
+      { "name": "caller",     "type": "address", "indexed": true },
+      { "name": "wmonRepaid", "type": "uint256", "indexed": false },
+      { "name": "quotePayout","type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "totalAssets",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "totalSupply",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address" }]
+  }
+]

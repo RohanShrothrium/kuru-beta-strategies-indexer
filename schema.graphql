@@ -1,0 +1,58 @@
+# ---------------------------------------------------------------------------
+# Vault — one record per deployed QuoteOnlyVault clone.
+# ---------------------------------------------------------------------------
+type Vault @entity {
+  id: ID!                  # Vault contract address (lowercase)
+  user: String!            # Owner / depositor address (lowercase)
+  factory: String!         # VaultFactory address that deployed this clone
+  createdAt: BigInt!       # Unix timestamp of VaultCreated event
+  createdAtBlock: BigInt!  # Block number of VaultCreated event
+  isActive: Boolean!       # False once totalSupply == 0 after a full withdraw
+
+  # Denormalised latest snapshot — updated on every snapshot for quick reads.
+  latestSharePriceE18: BigInt   # totalAssets * 1e18 / totalSupply; null until first snapshot
+  latestTvl: BigInt             # totalAssets in quote token decimals (e.g. 6 for USDC)
+  latestSnapshotBlock: BigInt   # Block number of the most recent snapshot
+}
+
+# ---------------------------------------------------------------------------
+# SharePricePoint — time-series entry written on every relevant event and
+# every ~100-block periodic tick.
+# ---------------------------------------------------------------------------
+type SharePricePoint @entity {
+  id: ID!                  # "{vaultAddress}-{blockNumber}-{source}"
+  vault: Vault!            # Back-reference to the owning vault
+  timestamp: BigInt!       # Unix timestamp of the block
+  blockNumber: BigInt!
+  sharePriceE18: BigInt!   # totalAssets * 1e18 / totalSupply (WAD precision)
+  tvl: BigInt!             # totalAssets in quote token decimals
+  # Source of the snapshot: "Deposit" | "Withdraw" | "Rebalance" | "Rebalanced" | "Block"
+  source: String!
+}
+
+# ---------------------------------------------------------------------------
+# UserPosition — per-user accounting across a single vault.
+# ---------------------------------------------------------------------------
+type UserPosition @entity {
+  id: ID!                       # "{userAddress}-{vaultAddress}"
+  user: String!                 # User / depositor address
+  vault: Vault!                 # Associated vault
+  totalQuoteDeposited: BigInt!  # Cumulative QUOTE deposited (raw, quote decimals)
+  totalQuoteWithdrawn: BigInt!  # Cumulative QUOTE received back
+  totalBaseReturned: BigInt!    # Cumulative BASE returned on withdrawal
+  currentShares: BigInt!        # Current share balance (can go negative due to rounding; clamp in UI)
+  lastUpdatedAt: BigInt!        # Timestamp of last update
+}
+
+# ---------------------------------------------------------------------------
+# VaultRegistry — singleton per factory, keeps a JSON-encoded list of all
+# registered vault addresses for use in the block handler.
+# ---------------------------------------------------------------------------
+type VaultRegistry @entity {
+  id: ID!              # Factory address (lowercase)
+  factory: String!
+  # JSON array string: ["0xabc...", "0xdef...", ...]
+  # Updated on every VaultCreated event.
+  vaultAddresses: String!
+  count: Int!
+}

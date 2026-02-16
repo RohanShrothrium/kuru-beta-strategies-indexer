@@ -1,0 +1,17 @@
+[
+  {
+    "type": "event",
+    "name": "VaultCreated",
+    "inputs": [
+      { "name": "user",  "type": "address", "indexed": true },
+      { "name": "vault", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "vaultOf",
+    "stateMutability": "view",
+    "inputs": [{ "name": "user", "type": "address" }],
+    "outputs": [{ "name": "vault", "type": "address" }]
+  }
+]

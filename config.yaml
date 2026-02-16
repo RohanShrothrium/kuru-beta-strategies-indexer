@@ -1,0 +1,57 @@
+name: kuru-share-price-indexer
+description: >
+  Indexes share prices and TVL for Kuru delta-neutral QuoteOnlyVault clones.
+  Tracks every Deposit, Withdraw, Rebalance and Rebalanced event to produce
+  a time-series of { timestamp, sharePriceE18, tvl } per vault, plus a
+  periodic block-level snapshot every ~100 blocks for continuity.
+
+# Field selection controls what block/tx metadata Envio attaches to events.
+field_selection:
+  block_fields:
+    - number
+    - timestamp
+
+networks:
+  - id: 143  # Monad mainnet
+    start_block: 0
+    # RPC fallback (used when HyperSync does not cover a block range).
+    # Set MONAD_RPC_URL in your environment or replace the placeholder below.
+    rpc_config:
+      url: ${MONAD_RPC_URL}
+
+    contracts:
+      # ------------------------------------------------------------------ #
+      # VaultFactory — two deployments (MONUSDC + MONAUSD markets).         #
+      # Each VaultCreated event triggers dynamic registration of the clone. #
+      # ------------------------------------------------------------------ #
+      - name: VaultFactory
+        abi_file_path: abis/VaultFactory.json
+        address:
+          - "0xCcb57703b65A8643401b11Cb40878F8cE0d622A3"  # MONUSDC
+          - "0x79B99A1e9fF8F16a198Dac4b42Fd164680487062"  # MONAUSD
+        handler: src/EventHandlers.ts
+        events:
+          - event: VaultCreated(address indexed user, address indexed vault)
+
+      # ------------------------------------------------------------------ #
+      # QuoteOnlyVault — no fixed address; registered dynamically from      #
+      # VaultCreated events via context.addNewContractRegistration().        #
+      # ------------------------------------------------------------------ #
+      - name: QuoteOnlyVault
+        abi_file_path: abis/QuoteOnlyVault.json
+        # address intentionally omitted — populated at runtime
+        handler: src/EventHandlers.ts
+        events:
+          - event: Deposit(address indexed user, uint256 quoteAmount, uint256 sharesMinted)
+          - event: Withdraw(address indexed user, uint256 sharesBurned, uint256 quoteReturned, uint256 baseReturned)
+          - event: Rebalance(bool indexed isDeleverage, uint256 ltvBefore, uint256 ltvAfter)
+          - event: Rebalanced(address indexed caller, uint256 wmonRepaid, uint256 quotePayout)
+
+    # -------------------------------------------------------------------- #
+    # Block handler — fires every 100 blocks to snapshot all active vaults  #
+    # even when no user events occur (e.g. Aave interest accruing).         #
+    # -------------------------------------------------------------------- #
+    block_handlers:
+      - name: PeriodicSnapshot
+        handler: src/BlockHandler.ts
+        interval: 100

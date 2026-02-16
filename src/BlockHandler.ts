@@ -1,0 +1,58 @@
+/**
+ * BlockHandler.ts
+ *
+ * Periodic snapshot handler — fires every 100 blocks (configured in config.yaml).
+ *
+ * Purpose: even when no user events occur (e.g. Aave interest silently
+ * increasing the vault NAV), we want at least one data point per ~100 blocks
+ * so the time-series chart doesn't have large gaps.
+ *
+ * Strategy:
+ *   1. Read the VaultRegistry entity for each known factory.
+ *   2. Parse the JSON-encoded vault address list.
+ *   3. eth_call totalAssets() + totalSupply() on every active vault.
+ *   4. Write SharePricePoint with source = "Block".
+ *
+ * Performance note: eth_calls are batched via Promise.all, so the wall-clock
+ * time is dominated by the slowest single vault, not the total count.
+ */
+
+import { snapshotVault } from "./utils";
+
+// Factory addresses (must match config.yaml).
+const FACTORY_ADDRESSES = [
+  "0xccb57703b65a8643401b11cb40878f8ce0d622a3", // MONUSDC
+  "0x79b99a1e9ff8f16a198dac4b42fd164680487062", // MONAUSD
+];
+
+// Envio calls this function with { block, context } every `interval` blocks.
+// The exact handler signature depends on the Envio version; adjust if needed.
+export async function PeriodicSnapshot({
+  block,
+  context,
+}: {
+  block: { number: number; timestamp: number };
+  context: any;
+}): Promise<void> {
+  const blockNumber = BigInt(block.number);
+  const timestamp = BigInt(block.timestamp);
+
+  // Collect all vault addresses across both factories.
+  const vaultAddresses: string[] = [];
+  for (const factoryAddr of FACTORY_ADDRESSES) {
+    const registry = await context.VaultRegistry.get(factoryAddr);
+    if (!registry) continue;
+
+    const addrs: string[] = JSON.parse(registry.vaultAddresses);
+    vaultAddresses.push(...addrs);
+  }
+
+  if (vaultAddresses.length === 0) return;
+
+  // Snapshot all vaults concurrently.
+  await Promise.all(
+    vaultAddresses.map((addr) =>
+      snapshotVault(addr, blockNumber, timestamp, "Block", context)
+    )
+  );
+}

@@ -1,0 +1,19 @@
+{
+  "name": "kuru-share-price-indexer",
+  "version": "1.0.0",
+  "description": "Envio indexer for Kuru delta-neutral vault share prices",
+  "scripts": {
+    "dev": "envio dev",
+    "start": "envio start",
+    "codegen": "envio codegen",
+    "build": "envio codegen && tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "envio": "^2.0.0",
+    "viem": "^2.0.0"
+  }
+}

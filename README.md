@@ -73,3 +73,4 @@ Add the new factory address to:
 2. `src/BlockHandler.ts` → `FACTORY_ADDRESSES` array
 
 Then re-run `envio dev` to re-index from the factory's deployment block.
+

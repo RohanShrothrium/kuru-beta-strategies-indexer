@@ -5,10 +5,10 @@ import { createPublicClient, http, parseAbi } from "viem";
 // Envio replays the chain sequentially, so reads at a specific blockNumber
 // reproduce the exact on-chain state at the moment the event was emitted.
 //
-// MONAD_RPC_URL must be set in the environment (or .env file).
+// ENVIO_MONAD_RPC_URL must be set in the environment (or .env file).
 // ---------------------------------------------------------------------------
 export const publicClient = createPublicClient({
-  transport: http(process.env.MONAD_RPC_URL ?? "https://rpc.monad.xyz"),
+  transport: http(process.env.ENVIO_MONAD_RPC_URL ?? "https://rpc.monad.xyz"),
 });
 
 // Minimal ABI fragments needed for eth_call reads.

@@ -45,7 +45,7 @@ npm install
 
 # 2. Set environment variables
 cp .env.example .env
-# Edit .env — set MONAD_RPC_URL
+# Edit .env — set ENVIO_MONAD_RPC_URL
 
 # 3. Generate TypeScript bindings from schema + config
 npx envio codegen

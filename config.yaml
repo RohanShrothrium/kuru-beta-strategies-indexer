@@ -32,7 +32,7 @@ chains:
     start_block: 0
     # RPC fallback (used when HyperSync does not cover a block range).
     # Set MONAD_RPC_URL in your environment or replace the placeholder below.
-    rpc: ${MONAD_RPC_URL}
+    # rpc: ${MONAD_RPC_URL}
     
     contracts:
       - name: VaultFactory

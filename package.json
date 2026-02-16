@@ -1,6 +1,7 @@
 {
   "name": "kuru-share-price-indexer",
   "version": "1.0.0",
+  "type": "module",
   "description": "Envio indexer for Kuru delta-neutral vault share prices",
   "scripts": {
     "dev": "envio dev",

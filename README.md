@@ -60,7 +60,7 @@ Query `SharePricePoint` for a vault, sorted by `blockNumber` ascending.
 Find the earliest point ≥ 30 days ago and the most recent point:
 
 ```
-APY = ((latestPrice / price30dAgo) ^ (365 / 30) - 1) * 100
+APR = ((latestPrice / price30dAgo) - 1) * (365 / 30) * 100
 ```
 
 This calculation belongs in the API/frontend layer — the indexer stores the

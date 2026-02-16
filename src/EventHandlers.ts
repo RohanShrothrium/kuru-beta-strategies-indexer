@@ -14,14 +14,18 @@
 import {
   VaultFactory,
   QuoteOnlyVault,
-  type VaultFactory_VaultCreatedEvent,
-  type QuoteOnlyVault_DepositEvent,
-  type QuoteOnlyVault_WithdrawEvent,
-  type QuoteOnlyVault_RebalanceEvent,
-  type QuoteOnlyVault_RebalancedEvent,
-} from "generated";
+} from "../generated/index.js";
+import type {
+  VaultFactory_VaultCreated_event,
+  QuoteOnlyVault_Deposit_event,
+  QuoteOnlyVault_Withdraw_event,
+  QuoteOnlyVault_Rebalance_event,
+  QuoteOnlyVault_Rebalanced_event,
+} from "../generated/src/Types.gen.js";
 
 import { snapshotVault } from "./utils";
+// Import block handler to register the periodic snapshot handler
+import "./BlockHandler.js";
 
 // ---------------------------------------------------------------------------
 // VaultFactory.VaultCreated
@@ -31,7 +35,7 @@ VaultFactory.VaultCreated.handler(
     event,
     context,
   }: {
-    event: VaultFactory_VaultCreatedEvent;
+    event: VaultFactory_VaultCreated_event;
     context: any;
   }) => {
     const vaultAddr = event.params.vault.toLowerCase();
@@ -69,12 +73,16 @@ VaultFactory.VaultCreated.handler(
     // 3. Register the new clone so Envio starts indexing its events.
     //    All future Deposit / Withdraw / Rebalance / Rebalanced events on
     //    this address will be routed to the QuoteOnlyVault handlers below.
-    context.addNewContractRegistration({
-      name: "QuoteOnlyVault",
-      address: event.params.vault,
-    });
+    // Note: In Envio v3, context doesn't have addNewContractRegistration.
+    // Dynamic registration is done via .contractRegister() callback instead.
   }
 );
+
+// Register dynamic contracts: whenever a VaultCreated event is detected,
+// automatically start indexing that vault's events.
+VaultFactory.VaultCreated.contractRegister(({ event, context }) => {
+  context.addQuoteOnlyVault(event.params.vault);
+});
 
 // ---------------------------------------------------------------------------
 // QuoteOnlyVault.Deposit
@@ -84,7 +92,7 @@ QuoteOnlyVault.Deposit.handler(
     event,
     context,
   }: {
-    event: QuoteOnlyVault_DepositEvent;
+    event: QuoteOnlyVault_Deposit_event;
     context: any;
   }) => {
     const vaultAddr = event.srcAddress.toLowerCase();
@@ -121,7 +129,7 @@ QuoteOnlyVault.Withdraw.handler(
     event,
     context,
   }: {
-    event: QuoteOnlyVault_WithdrawEvent;
+    event: QuoteOnlyVault_Withdraw_event;
     context: any;
   }) => {
     const vaultAddr = event.srcAddress.toLowerCase();
@@ -171,7 +179,7 @@ QuoteOnlyVault.Rebalance.handler(
     event,
     context,
   }: {
-    event: QuoteOnlyVault_RebalanceEvent;
+    event: QuoteOnlyVault_Rebalance_event;
     context: any;
   }) => {
     await snapshotVault(
@@ -192,7 +200,7 @@ QuoteOnlyVault.Rebalanced.handler(
     event,
     context,
   }: {
-    event: QuoteOnlyVault_RebalancedEvent;
+    event: QuoteOnlyVault_Rebalanced_event;
     context: any;
   }) => {
     await snapshotVault(
@@ -204,3 +212,7 @@ QuoteOnlyVault.Rebalanced.handler(
     );
   }
 );
+
+// Export a dummy value to ensure this module is loaded as an ES module.
+// Envio requires at least one export from handler files.
+export {};

@@ -29,7 +29,7 @@ contracts:
 # Chain configurations
 chains:
   - id: 143  # Monad mainnet
-    start_block: 0
+    start_block: 55716667
     # RPC fallback (used when HyperSync does not cover a block range).
     # Set ENVIO_MONAD_RPC_URL in your environment or replace the placeholder below.
     rpc: ${ENVIO_MONAD_RPC_URL}

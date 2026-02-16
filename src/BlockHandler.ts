@@ -17,6 +17,7 @@
  * time is dominated by the slowest single vault, not the total count.
  */
 
+import { onBlock } from "../generated/index.js";
 import { snapshotVault } from "./utils";
 
 // Factory addresses (must match config.yaml).
@@ -25,34 +26,41 @@ const FACTORY_ADDRESSES = [
   "0x79b99a1e9ff8f16a198dac4b42fd164680487062", // MONAUSD
 ];
 
-// Envio calls this function with { block, context } every `interval` blocks.
-// The exact handler signature depends on the Envio version; adjust if needed.
-export async function PeriodicSnapshot({
-  block,
-  context,
-}: {
-  block: { number: number; timestamp: number };
-  context: any;
-}): Promise<void> {
-  const blockNumber = BigInt(block.number);
-  const timestamp = BigInt(block.timestamp);
+// Register block handler: fires every 100 blocks for periodic snapshots.
+onBlock(
+  {
+    name: "PeriodicSnapshot",
+    chain: 143, // Monad mainnet
+    interval: 100, // Run every 100 blocks
+  },
+  async (args) => {
+    const blockNumber = BigInt(args.block.number);
+    const context = args.context;
+    
+    // Note: blockEvent only provides block.number, not timestamp.
+    // We estimate timestamp assuming ~1 second per block (adjust for your chain).
+    // For accurate timestamps, we'd need to make an RPC call to eth_getBlockByNumber.
+    const MONAD_GENESIS_TIMESTAMP = 1770000000; // Approximate Monad genesis time
+    const BLOCK_TIME_SECONDS = 1; // Monad block time
+    const timestamp = BigInt(MONAD_GENESIS_TIMESTAMP + Number(blockNumber) * BLOCK_TIME_SECONDS);
 
-  // Collect all vault addresses across both factories.
-  const vaultAddresses: string[] = [];
-  for (const factoryAddr of FACTORY_ADDRESSES) {
-    const registry = await context.VaultRegistry.get(factoryAddr);
-    if (!registry) continue;
+    // Collect all vault addresses across both factories.
+    const vaultAddresses: string[] = [];
+    for (const factoryAddr of FACTORY_ADDRESSES) {
+      const registry = await context.VaultRegistry.get(factoryAddr);
+      if (!registry) continue;
 
-    const addrs: string[] = JSON.parse(registry.vaultAddresses);
-    vaultAddresses.push(...addrs);
+      const addrs: string[] = JSON.parse(registry.vaultAddresses);
+      vaultAddresses.push(...addrs);
+    }
+
+    if (vaultAddresses.length === 0) return;
+
+    // Snapshot all vaults concurrently.
+    await Promise.all(
+      vaultAddresses.map((addr) =>
+        snapshotVault(addr, blockNumber, timestamp, "Block", context)
+      )
+    );
   }
-
-  if (vaultAddresses.length === 0) return;
-
-  // Snapshot all vaults concurrently.
-  await Promise.all(
-    vaultAddresses.map((addr) =>
-      snapshotVault(addr, blockNumber, timestamp, "Block", context)
-    )
-  );
-}
+);

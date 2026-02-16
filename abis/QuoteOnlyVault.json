@@ -2,6 +2,7 @@
   {
     "type": "event",
     "name": "Deposit",
+    "anonymous": false,
     "inputs": [
       { "name": "user",         "type": "address", "indexed": true },
       { "name": "quoteAmount",  "type": "uint256", "indexed": false },
@@ -11,6 +12,7 @@
   {
     "type": "event",
     "name": "Withdraw",
+    "anonymous": false,
     "inputs": [
       { "name": "user",          "type": "address", "indexed": true },
       { "name": "sharesBurned",  "type": "uint256", "indexed": false },
@@ -21,6 +23,7 @@
   {
     "type": "event",
     "name": "Rebalance",
+    "anonymous": false,
     "inputs": [
       { "name": "isDeleverage", "type": "bool",    "indexed": true },
       { "name": "ltvBefore",    "type": "uint256", "indexed": false },
@@ -30,6 +33,7 @@
   {
     "type": "event",
     "name": "Rebalanced",
+    "anonymous": false,
     "inputs": [
       { "name": "caller",     "type": "address", "indexed": true },
       { "name": "wmonRepaid", "type": "uint256", "indexed": false },

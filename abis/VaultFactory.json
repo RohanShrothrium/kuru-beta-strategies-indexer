@@ -2,6 +2,7 @@
   {
     "type": "event",
     "name": "VaultCreated",
+    "anonymous": false,
     "inputs": [
       { "name": "user",  "type": "address", "indexed": true },
       { "name": "vault", "type": "address", "indexed": true }

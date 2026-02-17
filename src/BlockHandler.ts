@@ -20,11 +20,12 @@
 import { onBlock } from "../generated/index.js";
 import { snapshotVault, publicClient } from "./utils";
 
-// Factory addresses (must match config.yaml).
+// Factory addresses (must match config.yaml), **lowercased** because
+// VaultRegistry ids are stored with `event.srcAddress.toLowerCase()`.
 const FACTORY_ADDRESSES = [
   "0xccb57703b65a8643401b11cb40878f8ce0d622a3", // MONUSDC
   "0x79b99a1e9ff8f16a198dac4b42fd164680487062", // MONAUSD
-  "0xb2c03D0Cb85037F0aF998f158dDF0206b8fB155b" // MONUSDC Staging
+  "0xb2c03d0cb85037f0af998f158ddf0206b8fb155b", // MONUSDC Staging
 ];
 
 // Register block handler: fires every 100 blocks for periodic snapshots.

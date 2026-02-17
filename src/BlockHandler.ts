@@ -18,7 +18,7 @@
  */
 
 import { onBlock } from "../generated/index.js";
-import { snapshotVault } from "./utils";
+import { snapshotVault, publicClient } from "./utils";
 
 // Factory addresses (must match config.yaml).
 const FACTORY_ADDRESSES = [
@@ -31,18 +31,26 @@ onBlock(
   {
     name: "PeriodicSnapshot",
     chain: 143, // Monad mainnet
-    interval: 100, // Run every 100 blocks
+    interval: 750, // Run every 100 blocks
   },
   async (args) => {
     const blockNumber = BigInt(args.block.number);
     const context = args.context;
     
-    // Note: blockEvent only provides block.number, not timestamp.
-    // We estimate timestamp assuming ~1 second per block (adjust for your chain).
-    // For accurate timestamps, we'd need to make an RPC call to eth_getBlockByNumber.
-    const MONAD_GENESIS_TIMESTAMP = 1770000000; // Approximate Monad genesis time
-    const BLOCK_TIME_SECONDS = 1; // Monad block time
-    const timestamp = BigInt(MONAD_GENESIS_TIMESTAMP + Number(blockNumber) * BLOCK_TIME_SECONDS);
+    // Get block timestamp from RPC for accurate timestamp.
+    let timestamp: bigint;
+    try {
+      const block = await publicClient.getBlock({
+        blockNumber,
+      });
+      timestamp = BigInt(block.timestamp);
+    } catch (err) {
+      // Fallback: if RPC call fails, log warning and skip this block.
+      console.warn(
+        `[PeriodicSnapshot] Failed to get block timestamp for block ${blockNumber}: ${err}`
+      );
+      return;
+    }
 
     // Collect all vault addresses across both factories.
     const vaultAddresses: string[] = [];

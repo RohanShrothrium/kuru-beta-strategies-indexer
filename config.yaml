@@ -39,6 +39,7 @@ chains:
         address:
           - "0xCcb57703b65A8643401b11Cb40878F8cE0d622A3"  # MONUSDC
           - "0x79B99A1e9fF8F16a198Dac4b42Fd164680487062"  # MONAUSD
+          - "0x27d7f49aB3086Ef6d247a9f33C611b51E18D5153"  # MONUSDC Staging
       
       - name: QuoteOnlyVault
         # address intentionally omitted — populated at runtime via dynamic registration

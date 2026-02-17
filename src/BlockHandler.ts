@@ -24,7 +24,7 @@ import { snapshotVault, publicClient } from "./utils";
 const FACTORY_ADDRESSES = [
   "0xccb57703b65a8643401b11cb40878f8ce0d622a3", // MONUSDC
   "0x79b99a1e9ff8f16a198dac4b42fd164680487062", // MONAUSD
-  "0x27d7f49aB3086Ef6d247a9f33C611b51E18D5153" // MONUSDC Staging
+  "0xb2c03D0Cb85037F0aF998f158dDF0206b8fB155b" // MONUSDC Staging
 ];
 
 // Register block handler: fires every 100 blocks for periodic snapshots.
